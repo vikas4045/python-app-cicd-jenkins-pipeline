@@ -1,89 +1,68 @@
 pipeline {
-  agent any
-  stages {
-   stage('Clean Reports') {
-    steps {
-        bat 'rmdir /s /q test-reports'
-    }
-}
+    agent any
 
-stage('Build Stage') {
-    steps {
-        bat 'pip install -r requirements.txt'
-    }
-}
+    stages {
 
-    stage('Testing Stage') {
-      steps {
-        echo '********* Test Stage Started **********'
-        python3 test.py
-        echo '********* Test Stage Finished **********'
-      }   
-    }
-    stage('Configure Artifactory'){
-      steps{
-        script {
-          echo '********* Configure Artifactory Started **********'
-             def userInput = input(
-             id: 'userInput', message: 'Enter password for Artifactory', parameters: [
-             
-             [$class: 'TextParameterDefinition', defaultValue: 'password', description: 'Artifactory Password', name: 'password']])
-             bat '...'
-             jfrog rt c artifactory-demo --url=http://34.68.191.118:8081/artifactory --user=admin --password=+userInput
-             '''
-          echo '********* Configure Artifactory Finished **********'
+        stage('Clean Reports') {
+            steps {
+                bat 'rmdir /s /q test-reports || exit 0'
+            }
         }
-       }
-    }
-    stage('Sanity check') {
+
+        stage('Build Stage') {
+            steps {
+                echo 'Installing dependencies'
+                bat 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Testing Stage') {
+            steps {
+                echo '********* Test Stage Started **********'
+                bat 'python test.py'
+                echo '********* Test Stage Finished **********'
+            }
+        }
+
+        stage('Sanity Check') {
             steps {
                 input "Does the staging environment look ok?"
             }
-     }
-stage('Deployment Stage'){
-            steps{
+        }
+
+        stage('Deployment Stage') {
+            steps {
                 input "Do you want to Deploy the application?"
                 echo '********* Deploy Stage Started **********'
-                timeout(time : 1, unit : 'MINUTES')
-                {
-                python3 app.py
+                timeout(time: 1, unit: 'MINUTES') {
+                    bat 'python app.py'
                 }
                 echo '********* Deploy Stage Finished **********'
             }
+        }
     }
-  }
-  post {
+
+    post {
         always {
             echo 'We came to an end!'
-            archiveArtifacts artifacts: 'dist/*.exe', fingerprint: true
             junit 'test-reports/*.xml'
-          script{
-            if(currentBuild.currentResult=='SUCCESS')
-            {
-              echo '********* Uploading to Artifactory is Started **********'
-              /*bat 'jfrog rt u "dist/*.exe" generic-local'*/
-              //bat 'Powershell.exe -executionpolicy remotesigned -File build_script.ps1'
-              echo '********* Uploading Finished **********'
-            }
-          }
-          
-            
             deleteDir()
+        }
 
-         }
         success {
-          echo 'Build Successfull!!'
-    }
+            echo 'Build Successful!!'
+        }
+
         failure {
-        echo 'Sorry mate! build is Failed :('
-    }
+            echo 'Sorry mate! build has Failed :('
+        }
+
         unstable {
             echo 'Run was marked as unstable'
         }
+
         changed {
-            echo 'Hey look at this, Pipeline state is changed.'
+            echo 'Pipeline state has changed.'
         }
     }
 }
-
-
