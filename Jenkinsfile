@@ -1,27 +1,18 @@
 pipeline {
   agent any
   stages {
-    stage('Clean Reports')
-    {
-      steps{
-        bat '...'
-        echo '********* Cleaning Workspace Stage Started **********'
-        rm -rf test-reports/
-        echo '********* Cleaning Workspace Stage Finished **********'
-        '''
-      }
+   stage('Clean Reports') {
+    steps {
+        bat 'rmdir /s /q test-reports'
     }
-    
-    stage('Build Stage') {
-      steps {
-        bat '...'
-        echo '********* Build Stage Started **********'
-        pip3 install -r requirements.txt
-        pyinstaller --onefile app.py
-        echo '********* Build Stage Finished **********'
-        '''
-        }
+}
+
+stage('Build Stage') {
+    steps {
+        bat 'pip install -r requirements.txt'
     }
+}
+
     stage('Testing Stage') {
       steps {
         echo '********* Test Stage Started **********'
@@ -94,4 +85,5 @@ stage('Deployment Stage'){
         }
     }
 }
+
 
