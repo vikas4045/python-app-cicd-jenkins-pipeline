@@ -4,7 +4,7 @@ pipeline {
     stage('Clean Reports')
     {
       steps{
-        sh '''
+        bat '...'
         echo '********* Cleaning Workspace Stage Started **********'
         rm -rf test-reports/
         echo '********* Cleaning Workspace Stage Finished **********'
@@ -14,7 +14,7 @@ pipeline {
     
     stage('Build Stage') {
       steps {
-        sh '''
+        bat '...'
         echo '********* Build Stage Started **********'
         pip3 install -r requirements.txt
         pyinstaller --onefile app.py
@@ -37,7 +37,7 @@ pipeline {
              id: 'userInput', message: 'Enter password for Artifactory', parameters: [
              
              [$class: 'TextParameterDefinition', defaultValue: 'password', description: 'Artifactory Password', name: 'password']])
-             sh '''
+             bat '...'
              jfrog rt c artifactory-demo --url=http://34.68.191.118:8081/artifactory --user=admin --password=+userInput
              '''
           echo '********* Configure Artifactory Finished **********'
@@ -94,3 +94,4 @@ stage('Deployment Stage'){
         }
     }
 }
+
