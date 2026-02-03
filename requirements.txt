@@ -1,2 +1,4 @@
-xmlrunner
-Flask
+flask
+pytest
+pytest-html
+pytest-cov
