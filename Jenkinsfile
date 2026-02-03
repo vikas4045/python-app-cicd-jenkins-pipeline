@@ -16,7 +16,7 @@ pipeline {
             steps {
                 echo 'Installing dependencies'
                 sh '''
-                    python3 -m venv venv
+                    python -m venv venv
                     . venv/bin/activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
@@ -59,7 +59,7 @@ pipeline {
     post {
         always {
             echo 'We came to an end!'
-            junit 'test-reports/results.xml'
+            junit allowEmptyResults: true, testResults: 'test-reports/results.xml'
             deleteDir()
         }
 
