@@ -5,21 +5,32 @@ pipeline {
 
         stage('Clean Reports') {
             steps {
-                bat 'rmdir /s /q test-reports || exit 0'
+                sh '''
+                    rm -rf test-reports || true
+                    mkdir -p test-reports
+                '''
             }
         }
 
         stage('Build Stage') {
             steps {
                 echo 'Installing dependencies'
-                bat 'pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Testing Stage') {
             steps {
                 echo '********* Test Stage Started **********'
-                bat 'python test.py'
+                sh '''
+                    . venv/bin/activate
+                    pytest test.py --junitxml=test-reports/results.xml
+                '''
                 echo '********* Test Stage Finished **********'
             }
         }
@@ -35,7 +46,10 @@ pipeline {
                 input "Do you want to Deploy the application?"
                 echo '********* Deploy Stage Started **********'
                 timeout(time: 1, unit: 'MINUTES') {
-                    bat 'python app.py'
+                    sh '''
+                        . venv/bin/activate
+                        python app.py
+                    '''
                 }
                 echo '********* Deploy Stage Finished **********'
             }
@@ -45,7 +59,7 @@ pipeline {
     post {
         always {
             echo 'We came to an end!'
-            junit 'test-reports/*.xml'
+            junit 'test-reports/results.xml'
             deleteDir()
         }
 
