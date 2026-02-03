@@ -67,9 +67,14 @@ def numerology(name):
     return message
 
 
-@app.route('/')  # main page
+# @app.route('/')  # main page
+# def hello():
+#   return render_template('index.html',message="hello dear, Lets have some fun!!",imgname="hello")
+
+@app.route('/')
 def hello():
-    return render_template('index.html',message="hello dear, Lets have some fun!!",imgname="hello")
+    return "<h1>hello brother, Lets have some fun!!</h1>"
+
 
 @app.route('/<username>') # dynamic route
 def hello_user(username):
