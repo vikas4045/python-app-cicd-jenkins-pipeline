@@ -1,20 +1,35 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS-20'
-    }
-
     stages {
-        stage('Install Dependencies') {
+        stage('Checkout') {
             steps {
-                bat 'npm install'
+                checkout scm
             }
         }
 
-        stage('Run Tests') {
+        stage('Setup Python') {
             steps {
-                bat 'npm test'
+                sh '''
+                python -m venv venv
+                venv\\Scripts\\activate
+                pip install -r requirements.txt
+                pip install pytest pytest-html pytest-cov
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh '''
+                venv\\Scripts\\activate
+                pytest test.py --junitxml=results.xml
+                '''
+            }
+            post {
+                always {
+                    junit 'results.xml'
+                }
             }
         }
     }
