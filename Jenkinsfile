@@ -1,35 +1,20 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.9'
+        }
+    }
 
     stages {
-        stage('Checkout') {
+        stage('Install Dependencies') {
             steps {
-                checkout scm
+                sh 'pip install -r requirements.txt'
             }
         }
 
-        stage('Setup Python') {
+        stage('Run Tests') {
             steps {
-                sh '''
-                python -m venv venv
-                venv\\Scripts\\activate
-                pip install -r requirements.txt
-                pip install pytest pytest-html pytest-cov
-                '''
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh '''
-                venv\\Scripts\\activate
-                pytest test.py --junitxml=results.xml
-                '''
-            }
-            post {
-                always {
-                    junit 'results.xml'
-                }
+                sh 'pytest'
             }
         }
     }
